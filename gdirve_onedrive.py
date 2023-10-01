@@ -100,7 +100,7 @@ def google_drive_fetch(credentials):
     try:
         print("Starting Google Drive fetch...")
         service = build('drive', 'v3', credentials=credentials)
-        results = service.files().list(pageSize=5, fields="nextPageToken, files(id, name, mimeType)").execute()
+        results = service.files().list().execute()
         print(f"Google Drive API results: {results}")
         items = results.get('files', [])
         downloaded_files = []
