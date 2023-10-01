@@ -97,8 +97,11 @@ def microsoft_callback():
     pass
 
 def google_drive_fetch(credentials):
+    try:
+    print("Starting Google Drive fetch...")
     service = build('drive', 'v3', credentials=credentials)
     results = service.files().list(pageSize=5, fields="nextPageToken, files(id, name, mimeType)").execute()
+    print(f"Google Drive API results: {results}")
     items = results.get('files', [])
     downloaded_files = []
 
@@ -136,6 +139,9 @@ def google_drive_fetch(credentials):
             downloaded_files.append(file_name)
             print(f"Downloaded files: {downloaded_files}")
     return downloaded_files
+    except Exception as e:
+        print(f"Error in google_drive_fetch: {e}")
+        return []
 
 def upload_to_onedrive(local_file_path, destination_path):
     client_id = 'YOUR_ONEDRIVE_CLIENT_ID'
