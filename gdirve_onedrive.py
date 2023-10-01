@@ -56,14 +56,35 @@ def google_callback():
     )
 
     flow.fetch_token(authorization_response=request.url)
-    # Serialize credentials and save to the session
-    session['credentials'] = flow.credentials.to_dict()
+
+    # Serialize the credentials into a dictionary
+    creds_dict = {
+        'token': flow.credentials.token,
+        'refresh_token': flow.credentials.refresh_token,
+        'id_token': flow.credentials.id_token,
+        'token_uri': flow.credentials.token_uri,
+        'client_id': flow.credentials.client_id,
+        'client_secret': flow.credentials.client_secret,
+        'scopes': flow.credentials.scopes
+    }
+
+    session['credentials'] = creds_dict
     return redirect(url_for('start_transfer'))
+
 
 @app.route('/start_transfer')
 def start_transfer():
-    # Deserialize credentials from the session
-    creds = Credentials.from_authorized_user_info(session['credentials'])
+    # Reconstruct the Credentials object from the stored dictionary
+    creds = Credentials(
+        token=session['credentials']['token'],
+        refresh_token=session['credentials']['refresh_token'],
+        id_token=session['credentials']['id_token'],
+        token_uri=session['credentials']['token_uri'],
+        client_id=session['credentials']['client_id'],
+        client_secret=session['credentials']['client_secret'],
+        scopes=session['credentials']['scopes']
+    )
+
     downloaded_files = google_drive_fetch(creds)
 
     for file_path in downloaded_files:
