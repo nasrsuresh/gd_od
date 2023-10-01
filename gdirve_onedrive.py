@@ -125,6 +125,8 @@ def google_drive_fetch(credentials):
             while os.path.exists(file_name):
                 file_name = f"{base_name}_{counter}" + os.path.splitext(file_name)[1]
                 counter += 1
+                
+            print(f"Downloading {file_name} from Google Drive...")
 
             with open(file_name, 'wb') as fh:
                 downloader = MediaIoBaseDownload(fh, request)
@@ -132,6 +134,7 @@ def google_drive_fetch(credentials):
                 while not done:
                     status, done = downloader.next_chunk()
             downloaded_files.append(file_name)
+            print(f"Downloaded files: {downloaded_files}")
     return downloaded_files
 
 def upload_to_onedrive(local_file_path, destination_path):
