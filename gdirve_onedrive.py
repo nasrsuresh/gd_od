@@ -1,27 +1,61 @@
-from flask import Flask, request, redirect, session
+from flask import Flask, request, redirect, session, url_for
 import os
 import os.path
 import pickle
 import requests
-import urllib.parse  # <- For parsing the URL
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google_auth_oauthlib.flow import Flow
 from requests_oauthlib import OAuth2Session
 from googleapiclient.http import MediaIoBaseDownload
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Change this to a real secret in production
 
+REDIRECT_URI = 'http://noneed.live/callback/google'
+OAUTH2_CLIENT_SECRETS = 'client_secret_293814398347-e9p535ohckoja5ijpeka5ce2j6vkk5jc.apps.googleusercontent.com.json'
+
 @app.route('/')
 def home():
-    # Provide a button/link for the user to start the transfer process.
-    return '''<a href="/start_transfer">Start Google Drive to OneDrive Transfer</a>'''
+    return '''<a href="/auth">Start Google Drive to OneDrive Transfer</a>'''
+
+@app.route('/auth')
+def google_auth():
+    flow = Flow.from_client_secrets_file(
+        OAUTH2_CLIENT_SECRETS,
+        scopes=['https://www.googleapis.com/auth/drive.readonly', 'https://www.googleapis.com/auth/drive.file'],
+        redirect_uri=REDIRECT_URI)
+    
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true')
+    
+    session['state'] = state
+    
+    return redirect(authorization_url)
+
+@app.route('/callback/google')
+def google_callback():
+    state = session['state']
+    
+    flow = Flow.from_client_secrets_file(
+        OAUTH2_CLIENT_SECRETS,
+        scopes=['https://www.googleapis.com/auth/drive.readonly', 'https://www.googleapis.com/auth/drive.file'],
+        state=state,
+        redirect_uri=REDIRECT_URI)
+    
+    flow.fetch_token(authorization_response=request.url)
+    
+    session['credentials'] = flow.credentials.to_dict()
+    
+    return redirect(url_for('start_transfer'))
 
 @app.route('/start_transfer')
 def start_transfer():
-    # Begin the authentication process with Google Drive
-    downloaded_files = google_drive_auth()
+    if 'credentials' not in session:
+        return redirect(url_for('google_auth'))
+    creds = Credentials(**session['credentials'])
+    downloaded_files = google_drive_fetch(creds)
+    
     if downloaded_files:
         for file_path in downloaded_files:
             upload_to_onedrive(file_path, file_path)
@@ -29,11 +63,6 @@ def start_transfer():
     else:
         return "No files fetched from Google Drive."
 
-# Assuming you will have a callback function for Google's OAuth2
-@app.route('/callback/google')
-def google_callback():
-    # Handle the callback from Google here
-    pass
 
 # Similarly, for OneDrive's OAuth2
 @app.route('/callback/microsoft')
