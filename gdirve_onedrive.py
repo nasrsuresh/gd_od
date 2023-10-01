@@ -7,7 +7,8 @@ from googleapiclient.http import MediaIoBaseDownload
 from werkzeug.middleware.proxy_fix import ProxyFix
 import requests
 from requests_oauthlib import OAuth2Session
-from google.oauth2.credentials import Credentials
+from google.oauth2.credentials import Credentials, to_authorized_user, from_authorized_user
+
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Change this to a real secret in production
@@ -55,12 +56,14 @@ def google_callback():
     )
 
     flow.fetch_token(authorization_response=request.url)
-    session['credentials'] = flow.credentials.to_dict()
+    # Serialize credentials and save to the session
+    session['credentials'] = to_authorized_user(flow.credentials)
     return redirect(url_for('start_transfer'))
 
 @app.route('/start_transfer')
 def start_transfer():
-    creds = Credentials(**session['credentials'])
+    # Deserialize credentials from the session
+    creds = from_authorized_user(session['credentials'])
     downloaded_files = google_drive_fetch(creds)
 
     for file_path in downloaded_files:
