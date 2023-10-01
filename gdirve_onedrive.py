@@ -98,47 +98,47 @@ def microsoft_callback():
 
 def google_drive_fetch(credentials):
     try:
-    print("Starting Google Drive fetch...")
-    service = build('drive', 'v3', credentials=credentials)
-    results = service.files().list(pageSize=5, fields="nextPageToken, files(id, name, mimeType)").execute()
-    print(f"Google Drive API results: {results}")
-    items = results.get('files', [])
-    downloaded_files = []
-
-    if items:
-        for item in items:
-            file_id = item['id']
-            file_name = item['name']
-            file_mime = item.get('mimeType', '')
-
-            if file_mime == "application/vnd.google-apps.document":
-                request = service.files().export_media(fileId=file_id, mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-                file_name += ".docx"
-            elif file_mime == "application/vnd.google-apps.spreadsheet":
-                request = service.files().export_media(fileId=file_id, mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-                file_name += ".xlsx"
-            elif file_mime == "application/vnd.google-apps.presentation":
-                request = service.files().export_media(fileId=file_id, mimeType='application/vnd.openxmlformats-officedocument.presentationml.presentation')
-                file_name += ".pptx"
-            else:
-                request = service.files().get_media(fileId=file_id)
-
-            counter = 1
-            base_name = os.path.splitext(file_name)[0]
-            while os.path.exists(file_name):
-                file_name = f"{base_name}_{counter}" + os.path.splitext(file_name)[1]
-                counter += 1
-                
-            print(f"Downloading {file_name} from Google Drive...")
-
-            with open(file_name, 'wb') as fh:
-                downloader = MediaIoBaseDownload(fh, request)
-                done = False
-                while not done:
-                    status, done = downloader.next_chunk()
-            downloaded_files.append(file_name)
-            print(f"Downloaded files: {downloaded_files}")
-    return downloaded_files
+        print("Starting Google Drive fetch...")
+        service = build('drive', 'v3', credentials=credentials)
+        results = service.files().list(pageSize=5, fields="nextPageToken, files(id, name, mimeType)").execute()
+        print(f"Google Drive API results: {results}")
+        items = results.get('files', [])
+        downloaded_files = []
+    
+        if items:
+            for item in items:
+                file_id = item['id']
+                file_name = item['name']
+                file_mime = item.get('mimeType', '')
+    
+                if file_mime == "application/vnd.google-apps.document":
+                    request = service.files().export_media(fileId=file_id, mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+                    file_name += ".docx"
+                elif file_mime == "application/vnd.google-apps.spreadsheet":
+                    request = service.files().export_media(fileId=file_id, mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                    file_name += ".xlsx"
+                elif file_mime == "application/vnd.google-apps.presentation":
+                    request = service.files().export_media(fileId=file_id, mimeType='application/vnd.openxmlformats-officedocument.presentationml.presentation')
+                    file_name += ".pptx"
+                else:
+                    request = service.files().get_media(fileId=file_id)
+    
+                counter = 1
+                base_name = os.path.splitext(file_name)[0]
+                while os.path.exists(file_name):
+                    file_name = f"{base_name}_{counter}" + os.path.splitext(file_name)[1]
+                    counter += 1
+                    
+                print(f"Downloading {file_name} from Google Drive...")
+    
+                with open(file_name, 'wb') as fh:
+                    downloader = MediaIoBaseDownload(fh, request)
+                    done = False
+                    while not done:
+                        status, done = downloader.next_chunk()
+                downloaded_files.append(file_name)
+                print(f"Downloaded files: {downloaded_files}")
+        return downloaded_files
     except Exception as e:
         print(f"Error in google_drive_fetch: {e}")
         return []
