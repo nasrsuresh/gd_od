@@ -7,7 +7,7 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import Flow
 from requests_oauthlib import OAuth2Session
 from googleapiclient.http import MediaIoBaseDownload
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Change this to a real secret in production
