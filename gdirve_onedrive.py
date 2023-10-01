@@ -49,7 +49,7 @@ def google_drive_auth():
     if os.path.exists('token.pickle'):
         os.remove('token.pickle')
     
-    flow = InstalledAppFlow.from_client_secrets_file('/Users/suresh/Downloads/client_secret_293814398347-e9p535ohckoja5ijpeka5ce2j6vkk5jc.apps.googleusercontent.com.json', SCOPES)
+    flow = InstalledAppFlow.from_client_secrets_file('client_secret_293814398347-e9p535ohckoja5ijpeka5ce2j6vkk5jc.apps.googleusercontent.com.json', SCOPES)
     creds = flow.run_local_server(port=50906)
     with open('token.pickle', 'wb') as token:
         pickle.dump(creds, token)
