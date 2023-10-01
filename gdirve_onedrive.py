@@ -132,7 +132,7 @@ def upload_to_onedrive(local_file_path, destination_path):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, ssl_context=('path_to_cert.pem', 'path_to_key.pem'))
+    app.run(host='0.0.0.0', port=8080)
 
 
 
