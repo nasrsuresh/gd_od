@@ -45,7 +45,7 @@ def google_callback():
         state=state,
         redirect_uri=REDIRECT_URI)
     
-    flow.fetch_token(authorization_response=request.url)
+    flow.fetch_token(authorization_response=request.url, include_client_id=True)
     
     session['credentials'] = flow.credentials.to_dict()
     
