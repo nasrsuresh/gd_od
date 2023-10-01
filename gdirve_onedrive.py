@@ -11,7 +11,7 @@ from googleapiclient.http import MediaIoBaseDownload
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Change this to a real secret in production
 
-REDIRECT_URI = 'REDIRECT_URI = 'https://noneed.live/callback/google'
+REDIRECT_URI ='https://noneed.live/callback/google'
 OAUTH2_CLIENT_SECRETS = 'client_secret_293814398347-e9p535ohckoja5ijpeka5ce2j6vkk5jc.apps.googleusercontent.com.json'
 
 @app.route('/')
