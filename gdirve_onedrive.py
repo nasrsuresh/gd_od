@@ -7,6 +7,7 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import Flow
 from requests_oauthlib import OAuth2Session
 from googleapiclient.http import MediaIoBaseDownload
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Change this to a real secret in production
@@ -35,6 +36,7 @@ def google_auth():
 
 @app.route('/callback/google')
 def google_callback():
+    print(request.scheme)
     state = session['state']
     
     flow = Flow.from_client_secrets_file(
@@ -158,7 +160,7 @@ def upload_to_onedrive(local_file_path, destination_path):
     with open(local_file_path, 'rb') as file:
         requests.put('https://graph.microsoft.com/v1.0/me/drive/root:/' + destination_path + ':/content', headers=headers, data=file)
 
-
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
