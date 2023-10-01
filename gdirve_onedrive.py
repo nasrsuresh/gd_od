@@ -7,12 +7,19 @@ from googleapiclient.http import MediaIoBaseDownload
 from werkzeug.middleware.proxy_fix import ProxyFix
 import requests
 from requests_oauthlib import OAuth2Session
+from google.oauth2.credentials import Credentials
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Change this to a real secret in production
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
 
 REDIRECT_URI = 'https://noneed.live/callback/google'
+SCOPES = [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'openid',
+    'https://www.googleapis.com/auth/drive.file'
+]
 OAUTH2_CLIENT_SECRETS = 'client_secret_293814398347-e9p535ohckoja5ijpeka5ce2j6vkk5jc.apps.googleusercontent.com.json'
 
 @app.route('/')
@@ -23,17 +30,15 @@ def home():
 def google_auth():
     flow = Flow.from_client_secrets_file(
         OAUTH2_CLIENT_SECRETS,
-        scopes=[
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile',
-            'openid',
-            'https://www.googleapis.com/auth/drive.file'
-        ],
-        redirect_uri=REDIRECT_URI)
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI
+    )
 
     authorization_url, state = flow.authorization_url(
         access_type='offline',
-        include_granted_scopes='true')
+        include_granted_scopes='false', # Ensure we're not re-using granted scopes from previous sessions
+        prompt='consent'
+    )
 
     session['state'] = state
     return redirect(authorization_url)
@@ -44,14 +49,10 @@ def google_callback():
 
     flow = Flow.from_client_secrets_file(
         OAUTH2_CLIENT_SECRETS,
-        scopes=[
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile',
-            'openid',
-            'https://www.googleapis.com/auth/drive.file'
-        ],
+        scopes=SCOPES,
         state=state,
-        redirect_uri=REDIRECT_URI)
+        redirect_uri=REDIRECT_URI
+    )
 
     flow.fetch_token(authorization_response=request.url)
     session['credentials'] = flow.credentials.to_dict()
