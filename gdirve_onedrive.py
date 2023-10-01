@@ -23,7 +23,12 @@ def home():
 def google_auth():
     flow = Flow.from_client_secrets_file(
         OAUTH2_CLIENT_SECRETS,
-        scopes=['https://www.googleapis.com/auth/drive.readonly', 'https://www.googleapis.com/auth/drive.file'],
+        scopes=[
+            'https://www.googleapis.com/auth/userinfo.email',
+            'https://www.googleapis.com/auth/userinfo.profile',
+            'openid',
+            'https://www.googleapis.com/auth/drive.file'
+        ],
         redirect_uri=REDIRECT_URI)
 
     authorization_url, state = flow.authorization_url(
